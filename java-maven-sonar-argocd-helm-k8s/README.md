@@ -2,7 +2,9 @@
 
 ![CI-CD End-To-End flow diagram ](https://github.com/user-attachments/assets/c55457db-f48d-4dfd-b9bd-cec6d4b2deff)
 
-Note: We have chosen to shell script rather than Image Updater in this deployment since it is widely used in the current market.
+Note: 
+      
+      We have chosen to shell script rather than Image Updater in this deployment since it is widely used in the current market.
       Using the shell script, we can automatically update the build changes with Manifest repo or source code repo as mentined in the above diagram.
       
       Ansible is not a very good tool for the deploying the application, if we are dealing with configuration management, then we can go ahead with Ansible.
