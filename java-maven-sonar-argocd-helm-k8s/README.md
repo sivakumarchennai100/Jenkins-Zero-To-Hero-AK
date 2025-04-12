@@ -182,12 +182,130 @@ Jenkins Installation is Successful. You can now starting using the Jenkins
    - Go to Manage Jenkins > Manage Plugins.
    - In the Available tab, search for "Docker Pipeline".
    - Select the plugin and click the Install button.
+   - Then in the Available tab, search for "SonarQube scanner".
    - Restart Jenkins after the plugin is installed.
    
 <img width="1392" alt="Screenshot 2023-02-01 at 12 17 02 PM" src="https://user-images.githubusercontent.com/43399466/215973898-7c366525-15db-4876-bd71-49522ecb267d.png">
 
 Wait for the Jenkins to be restarted.
 
+
+http://<ec2-instance-public-ip>:8080/restart
+```
+
+The docker agent configuration is now successful.
+
+****************************************************************************************************************************************
+### Next step is to write a Jenkins file 
+
+*** Url:https://github.com/sivakumarchennai100/Jenkins-Zero-To-Hero-AK/blob/main/java-maven-sonar-argocd-helm-k8s/spring-boot-app/JenkinsFile
+    Path: java-maven-sonar-argocd-helm-k8s/spring-boot-app/JenkinsFile
+
+    Note: It is advisable to use docker as an agent in the Jenkins pipeline to save the maintenance cost overhead.
+          Once the jenkins pipeline is triggered, docker agent executes the stages and steps involved in the Jenkins file and after executing the container is 
+          destroyed.
+
+          It is the responsibility of the devops engineer to build the docker image and place it in the Jenkins file. Jenkins will then trigger the pipeline.
+          
+ 
+
+### CREATE YOUR FIRST JENKINS PIPELINE:
+======================================
+
+when we create a jenkins pipeline using freestyle project, it is not in declarative way, whereas in pipeline approach, jenkins pipeline is written in declarative way.
+
+Goto Jenkins UI --> Dashboard --> first-jenkins-job --> configure --> Pipeline --> select 
+Definition: Pipeline script from SCM
+SCM: GIT
+Branch Specifier: main 
+Script Path: my-first-pipeline/Jenkinsfile  --> Save
+
+Goto Dashboard --> first-jenkins-job ---> Build now
+
+
+****************************************************************************************************************************************
+### Configure a Sonar Server locally or on a EC2 instance 
+
+- Sonarquke needs to be installed within the same VPC where Jenkins and other CICD components were installed
+- System Requirements
+Java 17+ (Oracle JDK, OpenJDK, or AdoptOpenJDK)
+Hardware Recommendations:
+   Minimum 2 GB RAM
+   2 CPU cores
+
+# Commands:
+$sudo apt update && sudo apt install unzip -y
+$ sudo su -
+#adduser sonarqube
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.4.1.88267.zip
+apt install unzip
+sudo su - somarqube
+unzip *
+chmod -R 775 /home/sonarqube/sonarqube-9.4.0-54424
+chown -R sonarqube:sonarqube /home/sonarqube/sonarqube-9.4.0-54424
+cd /sonarqube-9.4.0-54424/bin/linux-x86-64/
+ls
+./sonar.sh start
+
+Note: By default Sonar server will run on port 9000
+
+Check if Sonarqube is now accessible bu http://<EC2_ip address:9000>
+```
+Hurray !! Now you can access the `SonarQube Server` on `http://<ip-address>:9000` 
+Will ask to change the defaultpassword at the first login
+
+Now we have installed Sonarqube and installed the Sonarqube plugin on the Jenkins server, but inorder to authenticate Sonar with Jenkins
+Goto Sonarqube UI --> My account --> Security --> Tokens ( Generate Tokens: Jenkins --> Generate - Copy the token )
+Goto Jenkins UI ---> Manage Jenkins ---> Manage Credentials ---> System ---> Global credentials ---> Add credentials: Kind- Secret text , Scope-Global , Secret - Paste the token copied from Sonarqube , ID-sonarqube , Create.
+
+Now the Sonarqube configuration is done.
+
+
+************************************************************************
+
+# IQ Difference between adduser and useradd command**
+
+adduser
+High-level command (actually a Perl or shell script).
+
+More user-friendly and interactive.
+
+Automatically:
+
+Creates home directory (/home/username)
+
+Sets default shell (/bin/bash)
+
+Adds user to a group
+
+Prompts to set a password
+
+Ideal for manual user creation.
+
+Example:
+sudo adduser alice
+➡️ Then it asks you questions like password, full name, etc.
+
+🛠️ useradd
+Low-level binary.
+
+Not interactive — doesn’t do much unless you give it specific options.
+
+You have to manually:
+
+Create home directory (-m)
+
+Set shell (-s /bin/bash)
+
+Set password separately with passwd
+
+Example:
+sudo useradd -m -s /bin/bash alice
+sudo passwd alice
+
+
+**********************************************************************************************************************************
+## Install Docker on the EC2 Instance:
 
 ## Docker Slave Configuration
 
@@ -197,6 +315,7 @@ Run the below command to Install Docker
 sudo apt update
 sudo apt install docker.io
 ```
+
  
 ### Grant Jenkins user and Ubuntu user permission to docker deamon.
 
@@ -208,20 +327,141 @@ systemctl restart docker
 ```
 
 Once you are done with the above steps, it is better to restart Jenkins.
+http://<ec2-instance-public-ip>:8080/restart  --> To restart jenkins
 
 ```
-http://<ec2-instance-public-ip>:8080/restart
-```
+**********************************************************************************************************************************
+## Install Kubernetes Cluster on your laptop using Minikube:
 
-The docker agent configuration is now successful.
+Install minikube on Windows machine:
+----------------------------------
+
+PS C:\Users\smohan> New-Item -Path 'c:\' -Name 'minikube' -ItemType Directory -Force
 
 
-****************************************************************************************************************************************
+    Directory: C:\
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        04-09-2024     18:47                minikube
+
+
+PS C:\Users\smohan> Invoke-WebRequest -OutFile 'c:\minikube\minikube.exe' -Uri 'https://github.com/kubernetes/minikube/releases/latest/download/minikube-windows-amd64.exe' -UseBasicParsing
+
+
+
+step2:
+
+PS C:\WINDOWS\system32> $oldPath = [Environment]::GetEnvironmentVariable('Path', [EnvironmentVariableTarget]::Machine)
+PS C:\WINDOWS\system32> if ($oldPath.Split(';') -inotcontains 'C:\minikube'){
+>>   [Environment]::SetEnvironmentVariable('Path', $('{0};C:\minikube' -f $oldPath), [EnvironmentVariableTarget]::Machine)
+>> }
+PS C:\WINDOWS\system32>
+
+
+
+PS C:\WINDOWS\system32> minikube start
+
+PS C:\WINDOWS\system32> minikube start
+* minikube v1.33.1 on Microsoft Windows 10 Enterprise 10.0.19045.4780 Build 19045.4780
+* Automatically selected the docker driver. Other choices: hyperv, ssh
+* Using Docker Desktop driver with root privileges
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Pulling base image v0.0.44 ...
+* Downloading Kubernetes v1.30.0 preload ...
+    > preloaded-images-k8s-v18-v1...:  342.90 MiB / 342.90 MiB  100.00% 7.44 Mi
+    > gcr.io/k8s-minikube/kicbase...:  481.58 MiB / 481.58 MiB  100.00% 6.62 Mi
+* Creating docker container (CPUs=2, Memory=8100MB) ...
+* Stopping node "minikube"  ...
+* Powering off "minikube" via SSH ...
+* Deleting "minikube" in docker ...
+! StartHost failed, but will try again: creating host: create: provisioning: get ssh host-port: get port 22 for "minikube": docker container inspect -f "'{{(index (index .NetworkSettings.Ports "22/tcp") 0).HostPort}}'" minikube: exit status 1
+stdout:
+
+
+stderr:
+template parsing error: template: :1:4: executing "" at <index (index .NetworkSettings.Ports "22/tcp") 0>: error calling index: reflect: slice index out of range
+
+* Failed to start docker container. Running "minikube delete" may fix it: error loading existing host. Please try running [minikube delete], then run [minikube start] again: filestore "minikube": open C:\Users\skmohan\.minikube\machines\minikube\config.json: The system cannot find the file specified.
+! Startup with docker driver failed, trying with alternate driver hyperv: Failed to start host: error loading existing host. Please try running [minikube delete], then run [minikube start] again: filestore "minikube": open C:\Users\skmohan\.minikube\machines\minikube\config.json: The system cannot find the file specified.
+* Deleting "minikube" in docker ...
+* Removing C:\Users\skmohan\.minikube\machines\minikube ...
+
+X Exiting due to GUEST_FILE_IN_USE: remove C:\Users\skmohan\.minikube\machines\minikube\id_rsa: The process cannot access the file because it is being used by another process.
+* Suggestion: Another program is using a file required by minikube. If you are using Hyper-V, try stopping the minikube VM from within the Hyper-V manager
+* Documentation: https://minikube.sigs.k8s.io/docs/reference/drivers/hyperv/
+* Related issue: https://github.com/kubernetes/minikube/issues/7300
+
+PS C:\WINDOWS\system32>
+
+
+Note:
+
+If minikube is not working:
+
+    Recreate the cluster by running:
+    minikube delete --profile=minikube
+    minikube start --profile=minikube
+
+
+
+PS C:\WINDOWS\system32> minikube
+minikube provisions and manages local Kubernetes clusters optimized for development workflows.
+
+
+minikube kubectl -- get po -A
+
+
+
+PS C:\WINDOWS\system32> minikube start --driver=hyperv >>>>>>>>>>>>>>>>>>>>>>>>>> To start the minikube virtual env
+
+
+
+
+PS C:\WINDOWS\system32> minikube start --memory=4096 --driver=hyperkit
+* minikube v1.33.1 on Microsoft Windows 10 Enterprise 10.0.19045.4780 Build 19045.4780
+E0904 19:01:27.191428   22196 start.go:812] api.Load failed for minikube: filestore "minikube": open C:\Users\skmohan\.minikube\machines\minikube\config.json: The system cannot find the file specified.
+
+! Exiting due to GUEST_DRIVER_MISMATCH: The existing "minikube" cluster was created using the "docker" driver, which is incompatible with requested "hyperkit" driver.
+* Suggestion: Delete the existing 'minikube' cluster using: 'minikube delete', or start the existing 'minikube' cluster using: 'minikube start --driver=docker'
+
+PS C:\WINDOWS\system32>
+
+
+PS C:\WINDOWS\system32> minikube start
+* minikube v1.33.1 on Microsoft Windows 10 Enterprise 10.0.19045.4780 Build 19045.4780
+* Automatically selected the docker driver. Other choices: hyperv, ssh
+* Using Docker Desktop driver with root privileges
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Pulling base image v0.0.44 ...
+* Creating docker container (CPUs=2, Memory=8100MB) ...
+* Preparing Kubernetes v1.30.0 on Docker 26.1.1 ...
+  - Generating certificates and keys ...
+  - Booting up control plane ...
+  - Configuring RBAC rules ...
+* Configuring bridge CNI (Container Networking Interface) ...
+* Verifying Kubernetes components...
+  - Using image gcr.io/k8s-minikube/storage-provisioner:v5
+* Enabled addons: storage-provisioner, default-storageclass
+* Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+PS C:\WINDOWS\system32>
+
+
+
+PS C:\WINDOWS\system32> kubectl get nodes
+NAME       STATUS   ROLES           AGE   VERSION
+minikube   Ready    control-plane   40s   v1.30.0
+PS C:\WINDOWS\system32>
+
+
+**********************************************************************************************************************************
 
 **Prerequisites:**
 
    -  Java application code hosted on a Git repository
    -  Jenkins server
+   -  Install Maven
    -  Kubernetes cluster
    -  Helm package manager
    -  Argo CD
