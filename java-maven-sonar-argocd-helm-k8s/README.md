@@ -331,10 +331,13 @@ http://<ec2-instance-public-ip>:8080/restart  --> To restart jenkins
 
 ```
 **********************************************************************************************************************************
-## Install Kubernetes Cluster on your laptop using Minikube:
+## Install Kubernetes Cluster on your windows laptop using Minikube:
 
 Install minikube on Windows machine:
 ----------------------------------
+
+Reference Link: https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download
+
 
 PS C:\Users\smohan> New-Item -Path 'c:\' -Name 'minikube' -ItemType Directory -Force
 
@@ -362,6 +365,34 @@ PS C:\WINDOWS\system32>
 
 
 PS C:\WINDOWS\system32> minikube start
+
+SUCCESS:
+
+PS C:\WINDOWS\system32> minikube start
+* minikube v1.35.0 on Microsoft Windows 11 Home Single Language 10.0.26100.3775 Build 26100.3775
+* Automatically selected the docker driver. Other choices: hyperv, virtualbox, ssh
+* Using Docker Desktop driver with root privileges
+* Starting "minikube" primary control-plane node in "minikube" cluster
+* Pulling base image v0.0.46 ...
+* Downloading Kubernetes v1.32.0 preload ...
+    > gcr.io/k8s-minikube/kicbase...:  500.31 MiB / 500.31 MiB  100.00% 5.48 Mi
+    > preloaded-images-k8s-v18-v1...:  333.57 MiB / 333.57 MiB  100.00% 3.18 Mi
+* Creating docker container (CPUs=2, Memory=2200MB) ...
+! Failing to connect to https://registry.k8s.io/ from inside the minikube container
+* To pull new external images, you may need to configure a proxy: https://minikube.sigs.k8s.io/docs/reference/networking/proxy/
+* Preparing Kubernetes v1.32.0 on Docker 27.4.1 ...
+  - Generating certificates and keys ...
+  - Booting up control plane ...
+  - Configuring RBAC rules ...
+* Configuring bridge CNI (Container Networking Interface) ...
+* Verifying Kubernetes components...
+  - Using image gcr.io/k8s-minikube/storage-provisioner:v5
+* Enabled addons: storage-provisioner, default-storageclass
+* Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+
+
+---------------------------------------
+ERROR:
 
 PS C:\WINDOWS\system32> minikube start
 * minikube v1.33.1 on Microsoft Windows 10 Enterprise 10.0.19045.4780 Build 19045.4780
@@ -395,6 +426,7 @@ X Exiting due to GUEST_FILE_IN_USE: remove C:\Users\skmohan\.minikube\machines\m
 
 PS C:\WINDOWS\system32>
 
+-------------------------------------------------------
 
 Note:
 
@@ -412,12 +444,12 @@ minikube provisions and manages local Kubernetes clusters optimized for developm
 
 minikube kubectl -- get po -A
 
+-----------------------------------------------------
 
 
 PS C:\WINDOWS\system32> minikube start --driver=hyperv >>>>>>>>>>>>>>>>>>>>>>>>>> To start the minikube virtual env
 
-
-
+ERROR:
 
 PS C:\WINDOWS\system32> minikube start --memory=4096 --driver=hyperkit
 * minikube v1.33.1 on Microsoft Windows 10 Enterprise 10.0.19045.4780 Build 19045.4780
@@ -427,6 +459,14 @@ E0904 19:01:27.191428   22196 start.go:812] api.Load failed for minikube: filest
 * Suggestion: Delete the existing 'minikube' cluster using: 'minikube delete', or start the existing 'minikube' cluster using: 'minikube start --driver=docker'
 
 PS C:\WINDOWS\system32>
+
+PS C:\WINDOWS\system32> minikube start --memory=4096 --driver=hyperkit
+* minikube v1.35.0 on Microsoft Windows 11 Home Single Language 10.0.26100.3775 Build 26100.3775
+
+X Exiting due to DRV_UNSUPPORTED_OS: The driver 'hyperkit' is not supported on windows/amd64
+
+PS C:\WINDOWS\system32>
+
 
 
 PS C:\WINDOWS\system32> minikube start
@@ -453,6 +493,19 @@ PS C:\WINDOWS\system32> kubectl get nodes
 NAME       STATUS   ROLES           AGE   VERSION
 minikube   Ready    control-plane   40s   v1.30.0
 PS C:\WINDOWS\system32>
+
+PS C:\WINDOWS\system32> minikube status
+minikube
+type: Control Plane
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
+
+PS C:\WINDOWS\system32>
+
+Now Minikube is installed and created a single node k8s cluster successfuly.
+
 
 
 **********************************************************************************************************************************
