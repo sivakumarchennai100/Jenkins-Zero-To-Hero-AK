@@ -43,6 +43,12 @@ The above maven target stores the artifacts to the `target` directory. You can e
 
 ** Note: To avoid issues with local setup, Java versions and other dependencies, I would recommend the docker way. **
 
+- mvn clean package or mvn clean install will go to the specific folder where the maven application is stored and try to execute the mvn clean package.
+- mvn clean package or mvn clean install will find the pom.xml file (written by devops/developer)
+- pom.xml is responsible for getting the dependencies runtime and building the application
+- In pom.xml we mention the list of dependencies required to run the application when executed locally or remotely by someone or other applications.
+- Whenever mvn clean package or mvn clean install is executed, then the dependencies are installed as required for building the java application.
+- 
 
 ### Execute locally (Java 11 needed) and access the application on http://localhost:8080
 
@@ -200,6 +206,9 @@ The docker agent configuration is now successful.
 
 *** Url:https://github.com/sivakumarchennai100/Jenkins-Zero-To-Hero-AK/blob/main/java-maven-sonar-argocd-helm-k8s/spring-boot-app/JenkinsFile
     Path: java-maven-sonar-argocd-helm-k8s/spring-boot-app/JenkinsFile
+    - Stages in Jenkins pipeline is nothing but what are the differnet blocks you are trying to build using the Jenkins pipeline
+    - Checkout Stage is needed when the source code is placed at the Jenking pipeline itself and not on SCM repo
+
 
     Note: It is advisable to use docker as an agent in the Jenkins pipeline to save the maintenance cost overhead.
           Once the jenkins pipeline is triggered, docker agent executes the stages and steps involved in the Jenkins file and after executing the container is 
@@ -207,7 +216,7 @@ The docker agent configuration is now successful.
 
           It is the responsibility of the devops engineer to build the docker image and place it in the Jenkins file. Jenkins will then trigger the pipeline.
           
- 
+    
 
 ### CREATE YOUR FIRST JENKINS PIPELINE:
 ======================================
@@ -222,6 +231,15 @@ Script Path: my-first-pipeline/Jenkinsfile  --> Save
 
 Goto Dashboard --> first-jenkins-job ---> Build now
 
+- Once we have written the Jenkinsfile, then we need to put the docker credentials and Github credentials in Jenkins
+  Goto Jenkins UI ---> Manage Jenkins ---> Manage Credentials ---> System ---> Global credentials ---> Add credentials: Kind- Username and Password , Scope-Global , Username- <dockerhub username> , Password - <Docker hub pw>, Create.
+- Now the docker credentials is created.
+
+- Then we need to put the github credentials in Jenkins
+  Goto Jenkins UI ---> Manage Jenkins ---> Manage Credentials ---> System ---> Global credentials ---> Add credentials: Kind- Secret text , Scope-Global , Secret - Paste the token copied from github --> settings --> Developer settings --> Personel access token --> Create new token --> Provide the required details to create a new github token , ID-github , Create.
+
+- Now the github credentials is created.
+- Now restart the Jenkins everytime you do the configuration
 
 ****************************************************************************************************************************************
 ### Configure a Sonar Server locally or on a EC2 instance 
@@ -506,7 +524,86 @@ PS C:\WINDOWS\system32>
 
 Now Minikube is installed and created a single node k8s cluster successfuly.
 
+**********************************************************************************************************************************
+## INSTALL K8S CONTROLLER USING OPERATOR HUB
 
+Link: https://operatorhub.io/operator/argocd-operator --> Install
+
+![image](https://github.com/user-attachments/assets/fe2e212a-cb90-4d13-a4a3-dc820aeec799)
+
+## Execute the below command in your laptop powershell:
+
+## Install on Kubernetes:
+
+## Install Operator Lifecycle Manager (OLM), a tool to help manage the Operators running on your cluster. >>> To install this, need to open Gitbash on windows and execute the command
+
+$ curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.31.0/install.sh | bash -s v0.31.0
+
+## Install the operator by running the following command:What happens when I execute this command?
+
+$ kubectl create -f https://operatorhub.io/install/argocd-operator.yaml
+
+This Operator will be installed in the "operators" namespace and will be usable from all namespaces in the cluster.
+
+After install, watch your operator come up using next command.
+
+$ kubectl get csv -n operators
+
+To use it, checkout the custom resource definitions (CRDs) introduced by this operator to start using it.
+
+## VERIFY THE CI PART:
+--------------------
+After all the above steps are completed
+- Goto Jenkins Dashboard --> ultimate-demo --> Build now --> Check for status and check for the Jenkins logs
+- Goto Sonarqube UI --> Projects --> spring-boot-demo --> Check for the code smells.
+- Goto dockerhub and verify if the docker image is created, also check in the local server where Jenkins is running (docker images)
+
+**********************************************************************************************************************************
+## TO USE ARGOCD TO DEPLOY ON K8S:
+
+- Create an ArgoCD controller
+  Goto https://argocd-operator.readthedocs.io/en/latest/usage/basics/ --> create a new Argo CD cluster with the default configuration
+
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: example-argocd
+  labels:
+    example: basic
+spec: {}
+
+
+Create a file from PowerShell:
+
+"apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: example-argocd
+  labels:
+    example: basic
+spec: {}" | Out-File argocd-basics.yaml
+
+# kubectl apply -f argocd-basics.yaml
+
+PS C:\WINDOWS\system32> kubectl get pods
+NAME                                          READY   STATUS    RESTARTS   AGE
+example-argocd-application-controller-0       1/1     Running   0          2m41s
+example-argocd-redis-5678d59479-fr4kd         1/1     Running   0          2m42s
+example-argocd-repo-server-6ddfc9947f-6hsmq   1/1     Running   0          2m42s
+example-argocd-server-5b9d85449b-xk6g7        1/1     Running   0          2m42s
+
+PS C:\WINDOWS\system32> kubectl get svc
+NAME                            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+example-argocd-metrics          ClusterIP   10.97.126.39    <none>        8082/TCP            2m50s
+example-argocd-redis            ClusterIP   10.110.17.73    <none>        6379/TCP            2m50s
+example-argocd-repo-server      ClusterIP   10.99.228.202   <none>        8081/TCP,8084/TCP   2m50s
+example-argocd-server           ClusterIP   10.98.31.93     <none>        80/TCP,443/TCP      2m50s
+example-argocd-server-metrics   ClusterIP   10.111.146.47   <none>        8083/TCP            2m50s
+kubernetes                      ClusterIP   10.96.0.1       <none>        443/TCP             4h44m
+PS C:\WINDOWS\system32> kubectl edit svc example-argocd-server
+--> Change the Cluster type from ClusterIP to NodePort
+
+# minikube service argocd-server
 
 **********************************************************************************************************************************
 
