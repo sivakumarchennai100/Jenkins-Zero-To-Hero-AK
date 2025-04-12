@@ -23,7 +23,10 @@ For application related code docs, refer https://github.com/sivakumarchennai100/
 ## AWS EC2 Instance
 
 - Go to AWS Console
-- Instances(running)
+- Create Instances
+- Select Ubuntu image
+- Instance type (T2-Large) ( Note: Terminate the EC2 instance once the application is deployed and tested, since it is chargeble, no-free tier )
+- Select the existing Key-pair or create a new key-pair for SSH access
 - Launch instances
 
 <img width="994" alt="Screenshot 2023-02-01 at 12 37 45 PM" src="https://user-images.githubusercontent.com/43399466/215974891-196abfe9-ace0-407b-abd2-adcffe218e3f.png">
