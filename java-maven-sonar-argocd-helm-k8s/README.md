@@ -603,7 +603,31 @@ kubernetes                      ClusterIP   10.96.0.1       <none>        443/TC
 PS C:\WINDOWS\system32> kubectl edit svc example-argocd-server
 --> Change the Cluster type from ClusterIP to NodePort
 
-# minikube service argocd-server
+# minikube service argocd-server  --> Minikube generate an url for accessing the argoCD URL
+# To check : minikube service list
+
+Now we can access the url mentioned from the above service list, also check of all the argocd pods are running
+Argocd stored the password in secret in argocd cluster
+
+# to get the argocd password: username: admin
+kubectl get secret
+kubectl edit secret <argocd-cluster-secret>
+Copy the password for the above file and do --> echo -n <copied pw> | base64 -d
+
+Now login to ArgoCD UI with the above credentials
+
+Create Application --> Application Name: Test , Project Name: Default , SYNC POLICY : Automatic , Repo URL: https://github.com/sivakumarchennai100/Jenkins-Zero-To-Hero-AK/ , Path: java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests , DEST:Cluster URL: https://kubernetes.default.svc , Namespace: Default --> Create
+
+If the application is edited, then click on SYNC for the changes to take effect.
+
+# Verfiy if the Spring boot application is running:
+
+- Kubectl get deploy
+- Kubectl get pods
+
+Note: If someone changes the deployment file unintentionally, then argoCD corrects and sync with the correct version automatically.
+The the argoCD UI will display the Out of Sync message.
+
 
 **********************************************************************************************************************************
 
