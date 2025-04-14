@@ -11,9 +11,18 @@ Note:
       
       Also it is always good to go with ArgoCD for CD (Continous Deployment/Delivery) part rather than using Jenkins Pipeline since ArgoCD is a very good Gitops 
       friendly tool to deploy the manifest repo with the K8s cluster.
+
+      To do:
+      - Build the Java application using Maven (Installation & Configuration)
+      - SonarQube is basically used for image scanning part 
+      - Try to setup the Sonarqube server locally and send the report of the code execution of the static code analysis to Sonarqube.
+      - Build the image of the artifact of the docker image and push the image to docker hub
+      - Using Shell script automatically update the manifest repo and the source code repo
+      - Using ArgoCD deploy the manifest automatically using the K8s cluster.
+      
       
 
-**Here are the step-by-step details to set up an end-to-end Jenkins pipeline for a Java application using SonarQube, Argo CD, Helm, and Kubernetes:**
+**Here are the step-by-step details to set up an end-to-end Jenkins pipeline for a Java application using Maven , SonarQube, Jenkins,Argo CD and Kubernetes:**
 
 # Spring Boot based Java web application
 
@@ -410,41 +419,6 @@ PS C:\WINDOWS\system32> minikube start
 
 
 ---------------------------------------
-ERROR:
-
-PS C:\WINDOWS\system32> minikube start
-* minikube v1.33.1 on Microsoft Windows 10 Enterprise 10.0.19045.4780 Build 19045.4780
-* Automatically selected the docker driver. Other choices: hyperv, ssh
-* Using Docker Desktop driver with root privileges
-* Starting "minikube" primary control-plane node in "minikube" cluster
-* Pulling base image v0.0.44 ...
-* Downloading Kubernetes v1.30.0 preload ...
-    > preloaded-images-k8s-v18-v1...:  342.90 MiB / 342.90 MiB  100.00% 7.44 Mi
-    > gcr.io/k8s-minikube/kicbase...:  481.58 MiB / 481.58 MiB  100.00% 6.62 Mi
-* Creating docker container (CPUs=2, Memory=8100MB) ...
-* Stopping node "minikube"  ...
-* Powering off "minikube" via SSH ...
-* Deleting "minikube" in docker ...
-! StartHost failed, but will try again: creating host: create: provisioning: get ssh host-port: get port 22 for "minikube": docker container inspect -f "'{{(index (index .NetworkSettings.Ports "22/tcp") 0).HostPort}}'" minikube: exit status 1
-stdout:
-
-
-stderr:
-template parsing error: template: :1:4: executing "" at <index (index .NetworkSettings.Ports "22/tcp") 0>: error calling index: reflect: slice index out of range
-
-* Failed to start docker container. Running "minikube delete" may fix it: error loading existing host. Please try running [minikube delete], then run [minikube start] again: filestore "minikube": open C:\Users\skmohan\.minikube\machines\minikube\config.json: The system cannot find the file specified.
-! Startup with docker driver failed, trying with alternate driver hyperv: Failed to start host: error loading existing host. Please try running [minikube delete], then run [minikube start] again: filestore "minikube": open C:\Users\skmohan\.minikube\machines\minikube\config.json: The system cannot find the file specified.
-* Deleting "minikube" in docker ...
-* Removing C:\Users\skmohan\.minikube\machines\minikube ...
-
-X Exiting due to GUEST_FILE_IN_USE: remove C:\Users\skmohan\.minikube\machines\minikube\id_rsa: The process cannot access the file because it is being used by another process.
-* Suggestion: Another program is using a file required by minikube. If you are using Hyper-V, try stopping the minikube VM from within the Hyper-V manager
-* Documentation: https://minikube.sigs.k8s.io/docs/reference/drivers/hyperv/
-* Related issue: https://github.com/kubernetes/minikube/issues/7300
-
-PS C:\WINDOWS\system32>
-
--------------------------------------------------------
 
 Note:
 
@@ -463,48 +437,6 @@ minikube provisions and manages local Kubernetes clusters optimized for developm
 minikube kubectl -- get po -A
 
 -----------------------------------------------------
-
-
-PS C:\WINDOWS\system32> minikube start --driver=hyperv >>>>>>>>>>>>>>>>>>>>>>>>>> To start the minikube virtual env
-
-ERROR:
-
-PS C:\WINDOWS\system32> minikube start --memory=4096 --driver=hyperkit
-* minikube v1.33.1 on Microsoft Windows 10 Enterprise 10.0.19045.4780 Build 19045.4780
-E0904 19:01:27.191428   22196 start.go:812] api.Load failed for minikube: filestore "minikube": open C:\Users\skmohan\.minikube\machines\minikube\config.json: The system cannot find the file specified.
-
-! Exiting due to GUEST_DRIVER_MISMATCH: The existing "minikube" cluster was created using the "docker" driver, which is incompatible with requested "hyperkit" driver.
-* Suggestion: Delete the existing 'minikube' cluster using: 'minikube delete', or start the existing 'minikube' cluster using: 'minikube start --driver=docker'
-
-PS C:\WINDOWS\system32>
-
-PS C:\WINDOWS\system32> minikube start --memory=4096 --driver=hyperkit
-* minikube v1.35.0 on Microsoft Windows 11 Home Single Language 10.0.26100.3775 Build 26100.3775
-
-X Exiting due to DRV_UNSUPPORTED_OS: The driver 'hyperkit' is not supported on windows/amd64
-
-PS C:\WINDOWS\system32>
-
-
-
-PS C:\WINDOWS\system32> minikube start
-* minikube v1.33.1 on Microsoft Windows 10 Enterprise 10.0.19045.4780 Build 19045.4780
-* Automatically selected the docker driver. Other choices: hyperv, ssh
-* Using Docker Desktop driver with root privileges
-* Starting "minikube" primary control-plane node in "minikube" cluster
-* Pulling base image v0.0.44 ...
-* Creating docker container (CPUs=2, Memory=8100MB) ...
-* Preparing Kubernetes v1.30.0 on Docker 26.1.1 ...
-  - Generating certificates and keys ...
-  - Booting up control plane ...
-  - Configuring RBAC rules ...
-* Configuring bridge CNI (Container Networking Interface) ...
-* Verifying Kubernetes components...
-  - Using image gcr.io/k8s-minikube/storage-provisioner:v5
-* Enabled addons: storage-provisioner, default-storageclass
-* Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
-PS C:\WINDOWS\system32>
-
 
 
 PS C:\WINDOWS\system32> kubectl get nodes
