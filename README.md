@@ -199,4 +199,11 @@ Edit
 kubectl get nodes
 You should see a running node.
 
+ubuntu@ip-172-31-84-255:~$ minikube status
+minikube
+type: Control Plane
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
 
