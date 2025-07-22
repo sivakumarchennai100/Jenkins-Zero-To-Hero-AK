@@ -12,8 +12,10 @@
 # This should not be changed
 #ENTRYPOINT ["java","-jar","app.jar"]
 
-# Use a stable OpenJDK 17 image (Adoptium is preferred now over AdoptOpenJDK)
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jdk
+
+RUN apt-get update && apt-get install -y maven
+ENV JAVA_HOME=/opt/java/openjdk
 
 # Define the build-time JAR location
 ARG JAR_FILE=target/spring-boot-web.jar
