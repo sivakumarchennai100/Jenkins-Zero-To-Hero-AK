@@ -16,10 +16,10 @@ pipeline {
       jdk 'jdk17' // This is the name you configured
       maven 'maven-3.11.6' // Optional: set your Maven version
   }
-    environment {
-        JAVA_HOME = "${tool 'jdk17'}"
-        PATH = "${env.JAVA_HOME}/bin:${env.PATH}"
-    }
+  environment {
+      JAVA_HOME = "${tool 'jdk17'}"
+      PATH = "${env.JAVA_HOME}/bin:${env.PATH}"
+  }
     stage('Build and Test') {
       steps {
         sh 'ls -ltr'
