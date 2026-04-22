@@ -90,13 +90,32 @@ Java 17+ (Oracle JDK, OpenJDK, or AdoptOpenJDK)
 Hardware Recommendations:
    Minimum 2 GB RAM
    2 CPU cores
-sudo apt update && sudo apt install unzip -y
+sudo apt update && sudo apt install unzip -y or 
+sudo yum update -y && sudo yum install -y unzip
+``
 adduser sonarqube
 wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.4.1.88267.zip
 unzip *
-chown -R sonarqube:sonarqube /opt/sonarqube
-chmod -R 775 /opt/sonarqube
-cd /opt/sonarqube/bin/linux-x86-64
+[sonarqube@ip-172-31-23-117 ~]$ ls -lrth
+total 435M
+drwxr-xr-x. 11 sonarqube sonarqube  172 Feb 26  2024 sonarqube-10.4.1.88267
+-rw-r--r--.  1 sonarqube sonarqube 435M Feb 26  2024 sonarqube-10.4.1.88267.zip
+[sonarqube@ip-172-31-23-117 ~]$ 
+[sonarqube@ip-172-31-23-117 ~]$ 
+[sonarqube@ip-172-31-23-117 ~]$ 
+[sonarqube@ip-172-31-23-117 ~]$ 
+[sonarqube@ip-172-31-23-117 ~]$ chmod -R 755 /home/sonarqube/sonarqube-10.4.1.88267
+[sonarqube@ip-172-31-23-117 ~]$ chown -R sonarqube:sonarqube /home/sonarqube/sonarqube-10.4.1.88267
+[sonarqube@ip-172-31-23-117 ~]$ cd sonarqube-10.4.1.88267/bin/
+
+[sonarqube@ip-172-31-23-117 linux-x86-64]$ ls
+sonar.sh
+[sonarqube@ip-172-31-23-117 linux-x86-64]$ ./sonar.sh start
+/usr/bin/java
+Starting SonarQube...
+Started SonarQube.
+[sonarqube@ip-172-31-23-117 linux-x86-64]$ pwd
+/home/sonarqube/sonarqube-10.4.1.88267/bin/linux-x86-64
 ./sonar.sh start
 ```
 
