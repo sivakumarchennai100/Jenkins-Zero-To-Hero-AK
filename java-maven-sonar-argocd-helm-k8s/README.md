@@ -251,6 +251,214 @@ Goto Dashboard --> first-jenkins-job ---> Build now
 - Now restart the Jenkins everytime you do the configuration
 
 ****************************************************************************************************************************************
+✅ Install Jenkins Using Docker on EC2 (Amazon Linux)
+✅ Why Docker based Jenkins is Better
+•	✅ No Java/Jenkins package conflicts
+•	✅ Easy install & uninstall
+•	✅ Portable & reproducible
+•	✅ Industry preferred for labs & CI/CD
+________________________________________
+🧩 PREREQUISITES
+Make sure on your EC2:
+✅ Amazon Linux
+✅ Docker installed & running
+✅ Logged in as ec2-user
+✅ Port 8080 open in Security Group
+Check Docker:
+Shell
+docker --version
+``
+Show more lines
+If Docker is not running:
+Shell
+sudo systemctl start docker
+sudo systemctl enable docker
+Show more lines
+________________________________________
+🧩 STEP 1: Create Jenkins Data Directory (Persistent Storage)
+Shell
+mkdir -p ~/jenkins_home
+
+Show more lines
+✅ This stores:
+•	Jobs
+•	Plugins
+•	Configuration
+________________________________________
+🧩 STEP 2: Fix Permissions (VERY IMPORTANT)
+Jenkins runs as user 1000 inside container.
+Shell
+sudo chown -R 1000:1000 ~/jenkins_home
+Show more lines
+✅ Without this, Jenkins will fail to start.
+________________________________________
+🧩 STEP 3: Run Jenkins Container ✅✅✅
+Run exactly this command:
+Shell
+docker run -d \
+--name jenkins \
+-p 8080:8080 \
+-p 50000:50000 \
+-v ~/jenkins_home:/var/jenkins_home \
+jenkins/jenkins:lts
+Show more lines
+✅ What this does
+•	Runs Jenkins in background (-d)
+•	Exposes Jenkins UI on 8080
+•	Persists Jenkins data
+•	Uses LTS version
+________________________________________
+🧩 STEP 4: Verify Jenkins Container is Running
+Shell
+docker ps
+``
+Show more lines
+✅ You should see:
+Plain Text
+jenkins/jenkins:lts
+Show more lines
+________________________________________
+🧩 STEP 5: Get Jenkins Initial Admin Password
+Shell
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+
+Show more lines
+✅ Copy this password.
+________________________________________
+🧩 STEP 6: Open Jenkins UI 🌐
+In browser:
+http://<EC2_PUBLIC_IP>:8080
+✅ Paste the password
+✅ Click Continue
+________________________________________
+🧩 STEP 7: Complete Jenkins Setup
+1.	✅ Install Suggested Plugins
+2.	✅ Create Admin User
+3.	✅ Save & Finish
+🎉 Jenkins is now ready
+________________________________________
+🧩 STEP 8: (Optional) Allow Jenkins to Use Docker ✅
+If Jenkins needs to build Docker images:
+✅ Stop Jenkins container
+Shell
+docker stop jenkins
+docker rm jenkins
+Show more lines
+✅ Run Jenkins with Docker socket
+Shell
+docker run -d \
+--name jenkins \
+-p 8080:8080 \
+-p 50000:50000 \
+-v ~/jenkins_home:/var/jenkins_home \
+-v /var/run/docker.sock:/var/run/docker.sock \
+jenkins/jenkins:lts
+``
+Show more lines
+✅ Jenkins can now run Docker commands.
+________________________________________
+✅ Common Commands (Cheat Sheet)
+Action	Command
+Stop Jenkins	docker stop jenkins
+Start Jenkins	docker start jenkins
+View logs	docker logs jenkins
+Remove Jenkins	docker rm -f jenkins
+________________________________________
+✅ 20 Second Interview Ready Answer
+“I install Jenkins using Docker by running the official Jenkins LTS image, mapping port 8080 for UI access, and mounting a persistent volume for Jenkins data. This avoids OS level dependency issues and makes Jenkins easy to manage.”
+________________________________________
+✅ What You Should Do Now ✅
+1.	✅ Run the docker run command
+2.	✅ Open Jenkins UI
+3.	✅ Unlock Jenkins
+Reply with: ✅ “Jenkins running in Docker”
+________________________________________
+⏭️ NEXT STEP (After Jenkins is Running)
+➡️ Configure Git & Maven in Jenkins
+➡️ Create first Jenkins pipeline
+➡️ Integrate GitHub + Docker
+You’re now using the best practice Jenkins setup 🚀
+
+****************************************************************************************************************************************
+
+
+Updated Jenkins file:
+
+[ec2-user@ip-172-31-23-117 spring-boot-app]$ cat JenkinsFile 
+pipeline {
+  agent {
+    docker {
+      image 'sivaf5/maven-siva-docker-agent:v1'   <<<<<<<<<<<<, Need to check this
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+    }
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        sh 'echo passed'
+        //git branch: 'main', url: 'https://github.com/sivakumarchennai100/Jenkins-Zero-To-Hero-AK.git'
+      }
+    }
+    stage('Build and Test') {
+      steps {
+        sh 'ls -ltr'
+        // build the project and create a JAR file
+        sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
+      }
+    }
+    stage('Static Code Analysis') {
+      environment {
+        SONAR_URL = "http://34.201.116.83:9000"
+      }
+      steps {
+        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+          sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
+        }
+      }
+    }
+    stage('Build and Push Docker Image') {
+      environment {
+        DOCKER_IMAGE = "sivaf5/ultimate-cicd:${BUILD_NUMBER}"
+        // DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/Dockerfile"
+        REGISTRY_CREDENTIALS = credentials('docker-cred')
+      }
+      steps {
+        script {
+            sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
+            def dockerImage = docker.image("${DOCKER_IMAGE}")
+            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+                dockerImage.push()
+            }
+        }
+      }
+    }
+    stage('Update Deployment File') {
+        environment {
+            GIT_REPO_NAME = "Jenkins-Zero-To-Hero-AK"
+            GIT_USER_NAME = "sivakumarchennai100"
+        }
+        steps {
+            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                sh '''
+                    git config user.email "siva.xyz@gmail.com"
+                    git config user.name "Sivakumar Mohan"
+                    BUILD_NUMBER=${BUILD_NUMBER}
+                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                    git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                '''
+            }
+        }
+    }
+  }
+}
+[ec2-user@ip-172-31-23-117 spring-boot-app]$
+
+
+
+
+****************************************************************************************************************************************
 ### Configure a Sonar Server locally or on a EC2 instance 
 
 - Sonarquke needs to be installed within the same VPC where Jenkins and other CICD components were installed
